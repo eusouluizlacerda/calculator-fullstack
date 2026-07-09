@@ -102,9 +102,48 @@ export default function Calculator() {
     setApiError(null);
   }
 
+  const operationSymbol = OPERATIONS.find((op) => op.value === operation)?.symbol ?? '';
+  const annunciator = loading ? 'BUSY' : apiError ? 'ERR' : result ? '=' : 'RDY';
+
   return (
     <section className="calculator" aria-label="Calculator">
-      <h1>Calculator</h1>
+      <header className="plate">
+        <h1>Calculator</h1>
+        <span className="plate-model" aria-hidden="true">FS-01</span>
+      </header>
+
+      <div className="display">
+        <div className="annunciators" aria-hidden="true">
+          <span>{operationSymbol}</span>
+          <span className={apiError ? 'annunciator-err' : undefined}>{annunciator}</span>
+        </div>
+        {apiError && (
+          <div className="display-error" role="alert">
+            {apiError}
+          </div>
+        )}
+        {result && (
+          <div className="display-result" aria-live="polite">
+            <span className="result-expression">{describeResult(result)} =</span>
+            <span
+              className="result-value"
+              data-size={formatResult(result.result).length > 10 ? 'long' : 'normal'}
+            >
+              {formatResult(result.result)}
+            </span>
+          </div>
+        )}
+        {!apiError && !result && (
+          <div className="display-idle" data-busy={loading} aria-hidden="true">
+            0
+          </div>
+        )}
+      </div>
+      <p className="display-caption" aria-hidden="true">
+        <span>POST /api/v1/calculate</span>
+        <span>JSON</span>
+      </p>
+
       <form onSubmit={handleSubmit} noValidate>
         <div className="field">
           <label htmlFor="operation">Operation</label>
@@ -172,18 +211,9 @@ export default function Calculator() {
         </button>
       </form>
 
-      {apiError && (
-        <div className="message message-error" role="alert">
-          {apiError}
-        </div>
-      )}
-
-      {result && (
-        <div className="message message-result" aria-live="polite">
-          <span className="result-expression">{describeResult(result)} =</span>
-          <span className="result-value">{formatResult(result.result)}</span>
-        </div>
-      )}
+      <p className="brand" aria-hidden="true">
+        FastAPI × React
+      </p>
     </section>
   );
 }

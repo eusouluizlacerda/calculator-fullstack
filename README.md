@@ -32,7 +32,7 @@ calculator-fullstack/
 
 - `src/services/calculatorApi.ts` — the only module that talks to the network. Typed request/response, runtime shape-check of the 200 body, `ApiError` (carries the backend's `error`/`detail`) vs `NetworkError` (fetch failure) as distinct failure modes.
 - `src/components/Calculator.tsx` — presentation only: operand inputs (second one removed for `sqrt`), operation select, inline client-side validation (required, finite numbers), API errors rendered in a `role="alert"` region, submit disabled while a request is in flight.
-- Plain CSS, single-column card, usable at 360 px width.
+- Plain CSS, no UI framework. The interface is styled as a desk calculator (Olivetti/Braun lineage): ivory enamel chassis, a dark display window with phosphor digits where results and API errors appear (with `RDY`/`BUSY`/`ERR` annunciators), and a single red action key. Self-hosted IBM Plex Mono/Sans via Fontsource; respects `prefers-reduced-motion` and `prefers-color-scheme`; usable at 360 px width.
 
 ## API
 
@@ -164,4 +164,5 @@ npm run coverage    # vitest run --coverage (v8)
 - **Errors split 400 vs 422**: 400 = valid request, mathematically impossible (domain); 422 = malformed request (validation). Both share the `{"error", "detail"}` body so clients parse one shape.
 - **Frontend trusts nothing**: 200 bodies are shape-checked at runtime; API errors and network failures are distinct types with distinct messages; results are formatted via `toPrecision(12)` so `0.1 + 0.2` displays as `0.3`.
 - **nginx proxy re-resolves the backend** (`resolver 127.0.0.11` + variable `proxy_pass`), so restarting only the backend container doesn't leave the proxy pointing at a stale IP (would otherwise 502 until the frontend restarts).
+- **UI as an instrument, not a form**: the display window is the single source of feedback — results, domain errors (in amber, like a real calculator's error state) and status annunciators all live there, so the user always looks at one place. Result digits scale down past 10 characters to stay on one line.
 - **Kept out of scope** on purpose: no database, no auth, no state-management library (`useState` suffices), no calculation history.
